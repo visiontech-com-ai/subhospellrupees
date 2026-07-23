@@ -1,35 +1,135 @@
-# SubhoSpellRupees 🇮🇳
+# SubhoSpellRupees
 
-> Automatic Indian Currency Speller for Microsoft Excel — System-wide `.xlam` Add-In with an automated 1-click installation script.
-
-**SubhoSpellRupees** is a lightweight Microsoft Excel Add-In (`.xlam`) that converts numerical amounts into words using the **Indian Numbering System** (*Crores, Lakhs, Thousands, Rupees, and Paise*). 
-
-It includes a single-click Batch/PowerShell installer script that automatically downloads, installs, and registers the Add-In into Excel so it works seamlessly across every workbook on your machine.
+> Indian Currency Speller for Microsoft Excel — converts numbers to words using the Indian numbering system (Crores, Lakhs, Thousands, Rupees, and Paise).
 
 ---
 
-## 🌟 Features
+## What it does
 
-* **Indian Numbering Format:** Formats numbers into *Crores*, *Lakhs*, *Thousands*, *Rupees*, and *Paise*.
-* **System-Wide Availability:** Once installed, `=SpellRupees()` works across **all** current and future Excel workbooks.
-* **1-Click Automated Deployment:** Downloads the latest release from GitHub and registers the Add-In via COM automation without requiring admin rights.
-* **Protected Core:** The VBA source code is password-locked to preserve function integrity and prevent accidental code changes.
+`=SpellRupees(A1)` turns a number in a cell into spelled-out Indian currency:
 
----
+| Input | Output |
+|-------|--------|
+| `1500000` | `Fifteen Lakhs Rupees Only` |
+| `10000000` | `One Crore Rupees Only` |
+| `75250.50` | `Seventy Five Thousand Two Hundred Fifty Rupees and Fifty Paise Only` |
+| `0` | `Zero Rupees Only` |
 
-## 🚀 Quick Installation
-
-1. Download **[`install_addin.bat`](https://raw.githubusercontent.com/visiontech-com-ai/subhospellrupees/main/install_addin.bat)** (that's the only file you need).
-2. Double-click **`install_addin.bat`** to run the installer — it automatically downloads the Add-In from GitHub and installs it.
-3. Open Microsoft Excel and start using `=SpellRupees()` right away.
-
-> No need to clone or download the full repository. The installer fetches the Add-In directly.
+The function works across **all** Excel workbooks on your machine once installed — no need to copy anything into individual files.
 
 ---
 
-## 🧪 Usage & Syntax
+## Installation
 
-In any cell of any Excel sheet, use the formula:
+### Option 1 — 1-Click Installer (Recommended)
+
+1. **Download** [`install_addin.bat`](https://github.com/visiontech-com-ai/subhospellrupees/releases/latest/download/install_addin.bat) from the latest release.
+2. **Double-click** `install_addin.bat` to run it.
+3. **Open (or restart) Excel** — `=SpellRupees()` is ready to use.
+
+The installer:
+- Downloads `SubhoSpellRupees.xlam` directly from this repository
+- Places it in `%APPDATA%\Microsoft\AddIns\` (the standard Excel add-ins folder)
+- Registers it in the Windows Registry so Excel loads it automatically on every startup
+- Requires no admin rights
+
+### Option 2 — Manual Installation
+
+1. Download [`SubhoSpellRupees.xlam`](https://github.com/visiontech-com-ai/subhospellrupees/releases/latest/download/SubhoSpellRupees.xlam) from the latest release.
+2. Copy it to `%APPDATA%\Microsoft\AddIns\`
+   - Press `Win + R`, type `%APPDATA%\Microsoft\AddIns`, press Enter.
+3. In Excel, go to **File → Options → Add-ins**.
+4. At the bottom, set **Manage** to **Excel Add-ins** and click **Go**.
+5. Click **Browse**, navigate to the file, and click **OK**.
+6. Tick the **SubhoSpellRupees** checkbox and click **OK**.
+
+---
+
+## Usage
 
 ```excel
-=SpellRupees(Cell_Reference_or_Number)
+=SpellRupees(number_or_cell)
+```
+
+### Examples
+
+```excel
+=SpellRupees(1000)
+→ One Thousand Rupees Only
+
+=SpellRupees(A2)
+→ (spells out whatever number is in A2)
+
+=SpellRupees(SUM(B2:B10))
+→ (spells out the sum of a range)
+```
+
+### Notes
+
+- Input can be a literal number, a cell reference, or any formula that returns a number.
+- Amounts up to **99,99,99,99,999** (99 Arab 99 Crore 99 Lakh 99 Thousand 999) are supported.
+- Paise (decimal) values are rounded to 2 decimal places.
+- Negative numbers return an error — negate the input before spelling if needed.
+
+---
+
+## Requirements
+
+- Microsoft Excel 2010 or later (Windows)
+- Windows 7 or later
+- Internet connection (installer only, for the initial download)
+
+---
+
+## Uninstalling
+
+### Using the installer machine
+
+1. In Excel, go to **File → Options → Add-ins → Manage: Excel Add-ins → Go**.
+2. Uncheck **SubhoSpellRupees** and click **OK**.
+3. Delete `%APPDATA%\Microsoft\AddIns\SubhoSpellRupees.xlam`.
+
+### Fully clean (registry)
+
+Open PowerShell and run:
+
+```powershell
+$key = 'HKCU:\SOFTWARE\Microsoft\Office\16.0\Excel\Options'
+Get-ItemProperty $key | Select-Object -Property OPEN* |
+  Get-Member -MemberType NoteProperty |
+  Where-Object { (Get-ItemProperty $key).$($_.Name) -like '*SubhoSpellRupees*' } |
+  ForEach-Object { Remove-ItemProperty -Path $key -Name $_.Name }
+```
+
+Replace `16.0` with your Office version (`15.0` for 2013, `14.0` for 2010).
+
+---
+
+## Security & Privacy
+
+- The VBA source code inside the add-in is **password-protected** to preserve function integrity.
+- The installer downloads files only from this public GitHub repository over HTTPS (TLS 1.2+).
+- No data leaves your machine when using `=SpellRupees()` — all computation is local.
+- No admin rights are required at any point.
+
+---
+
+## Troubleshooting
+
+**"Failed to download file"** — Check your internet connection. If you are behind a corporate proxy, download the `.xlam` manually (Option 2 above).
+
+**Function not found after install** — Close Excel completely and reopen it. If the issue persists, check that `SubhoSpellRupees.xlam` exists in `%APPDATA%\Microsoft\AddIns\`.
+
+**Macro security warning** — Go to **File → Options → Trust Center → Trust Center Settings → Trusted Locations** and add `%APPDATA%\Microsoft\AddIns\`. This folder is the standard trusted location for Excel add-ins.
+
+**Running on older Office (2010/2013)** — The installer tries Office versions 16.0, 15.0, and 14.0 in order. If your registry path differs, use the manual installation method.
+
+---
+
+## License
+
+This project is released for free personal and commercial use. The VBA source is protected; redistribution of modified versions is not permitted.
+
+---
+
+*Developed by Subho · Distributed by [DwiSha Ventures Sdn Bhd](https://github.com/visiontech-com-ai)*
