@@ -47,22 +47,26 @@ if %ERRORLEVEL% NEQ 0 (
 echo.
 echo [>] Registering Add-In with Microsoft Excel...
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-    "try { " ^
-    "    $excel = New-Object -ComObject Excel.Application; " ^
-    "    $excel.Visible = $false; " ^
-    "    $addin = $excel.AddIns.Add('%DEST_FILE%', $false); " ^
-    "    $addin.Installed = $true; " ^
-    "    $excel.Quit(); " ^
-    "    [System.Runtime.Interopservices.Marshal]::ReleaseComObject($excel) | Out-Null; " ^
-    "    Write-Host '[+] Successfully enabled Add-In in Excel.' -ForegroundColor Green; " ^
-    "} catch { " ^
-    "    Write-Host '[!] Downloaded to AddIns folder, but COM registration requires manual activation via Excel -> Add-ins.' -ForegroundColor Yellow; " ^
-    "}"
+    "$dest = '%DEST_FILE%'; " ^
+    "$versions = @('16.0','15.0','14.0'); " ^
+    "$optKey = $null; " ^
+    "foreach ($v in $versions) { $k = 'HKCU:\SOFTWARE\Microsoft\Office\' + $v + '\Excel'; if (Test-Path $k) { $optKey = $k + '\Options'; if (-not (Test-Path $optKey)) { New-Item -Path $optKey -Force | Out-Null }; break } }; " ^
+    "if (-not $optKey) { Write-Host '[!] Excel not found in registry. Activate manually: Excel > File > Options > Add-ins.' -ForegroundColor Yellow; exit 0 }; " ^
+    "$props = Get-ItemProperty -Path $optKey -EA SilentlyContinue; " ^
+    "$already = $false; " ^
+    "if ($props) { $props.PSObject.Properties | Where-Object { $_.Name -match '^OPEN' } | ForEach-Object { if ($_.Value -like '*SubhoSpellRupees*') { $already = $true } } }; " ^
+    "if ($already) { Write-Host '[+] Add-In is already registered.' -ForegroundColor Green; exit 0 }; " ^
+    "$idx = ''; " ^
+    "while (Get-ItemProperty -Path $optKey -Name ('OPEN' + $idx) -EA SilentlyContinue) { if ($idx -eq '') { $idx = '1' } else { $idx = [string]([int]$idx + 1) } }; " ^
+    "$val = '/R ' + [char]34 + $dest + [char]34; " ^
+    "Set-ItemProperty -Path $optKey -Name ('OPEN' + $idx) -Value $val -Type String; " ^
+    "Write-Host '[+] Add-In registered. It will load automatically next time Excel opens.' -ForegroundColor Green"
 
 echo.
 echo ===================================================
 echo   Installation Complete!
 echo   Function =SpellRupees() is now available system-wide.
+echo   If Excel is open, close and reopen it to activate.
 echo   Powered by SubhoSpellRupees
 echo ===================================================
 echo.
