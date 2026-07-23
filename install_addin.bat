@@ -50,7 +50,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
     "try { " ^
     "    $excel = New-Object -ComObject Excel.Application; " ^
     "    $excel.Visible = $false; " ^
-    "    $addin = $excel.AddIns.Add('%DEST_FILE%', $true); " ^
+    "    $addin = $excel.AddIns.Add('%DEST_FILE%', $false); " ^
     "    $addin.Installed = $true; " ^
     "    $excel.Quit(); " ^
     "    [System.Runtime.Interopservices.Marshal]::ReleaseComObject($excel) | Out-Null; " ^

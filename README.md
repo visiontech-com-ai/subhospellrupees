@@ -19,9 +19,11 @@ It includes a single-click Batch/PowerShell installer script that automatically 
 
 ## 🚀 Quick Installation
 
-1. Download or clone this repository to your computer.
-2. Double-click **`install_addin.bat`** to run the installer.
+1. Download **[`install_addin.bat`](https://raw.githubusercontent.com/visiontech-com-ai/subhospellrupees/main/install_addin.bat)** (that's the only file you need).
+2. Double-click **`install_addin.bat`** to run the installer — it automatically downloads the Add-In from GitHub and installs it.
 3. Open Microsoft Excel and start using `=SpellRupees()` right away.
+
+> No need to clone or download the full repository. The installer fetches the Add-In directly.
 
 ---
 
