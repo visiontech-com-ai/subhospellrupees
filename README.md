@@ -132,4 +132,4 @@ This project is released for free personal and commercial use. The VBA source is
 
 ---
 
-*Developed by Subho · Distributed by DwiSha Ventures Sdn Bhd, Distributed by VisionTech*
+*Developed by Subho · Distributed by VisionTech*
