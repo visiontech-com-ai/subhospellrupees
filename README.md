@@ -1,4 +1,4 @@
-# SubhoSpellRupees
+# SpellRupees by Subho
 
 > Indian Currency Speller for Microsoft Excel — converts numbers to words using the Indian numbering system (Crores, Lakhs, Thousands, Rupees, and Paise).
 

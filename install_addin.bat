@@ -1,11 +1,11 @@
 @echo off
 setlocal enabledelayedexpansion
 
-title SubhoSpellRupees - Excel Currency Add-In Installer
+title SpellRupees by Subho - Excel Currency Add-In Installer
 cls
 
 echo ===================================================
-echo   SubhoSpellRupees - Excel Add-In Installer
+echo   SpellRupees by Subho - Excel Add-In Installer
 echo   Product  : Indian Currency Speller
 echo   Developer: Subho
 echo ===================================================
@@ -67,7 +67,7 @@ echo ===================================================
 echo   Installation Complete!
 echo   Function =SpellRupees() is now available system-wide.
 echo   If Excel is open, close and reopen it to activate.
-echo   Powered by SubhoSpellRupees
+echo   Powered by SpellRupees by Subho
 echo ===================================================
 echo.
 pause
