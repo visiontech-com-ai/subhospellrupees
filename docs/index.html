@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SpellRupees by Subho — Indian Currency Speller for Excel</title>
   <meta name="description" content="Free Excel add-in that converts numbers to Indian currency words — Crores, Lakhs, Rupees and Paise. 1-click installer, no admin rights needed.">
+  <link rel="icon" type="image/png" href="icon.png">
+  <link rel="apple-touch-icon" href="icon.png">
   <style>
     /* ── Tokens ───────────────────────────────────────────────── */
     :root {
@@ -148,6 +150,12 @@
       color: var(--mark-alpha);
       line-height: 1; pointer-events: none; user-select: none;
       font-weight: bold;
+    }
+    .hero-logo {
+      width: 120px; height: 120px;
+      object-fit: contain;
+      margin-bottom: 1.5rem;
+      position: relative;
     }
     .hero-tag {
       display: inline-block;
@@ -320,6 +328,7 @@
 <!-- ── Hero ──────────────────────────────────────────────────── -->
 <section class="hero">
   <div class="hero-wm" aria-hidden="true">₹</div>
+  <img class="hero-logo" src="icon.png" alt="SpellRupees by Subho logo">
   <div class="hero-tag">Free · Windows · Excel 2010+</div>
   <h1>Spell Indian currency<br>amounts in words — <em>instantly.</em></h1>
   <p class="hero-sub">
