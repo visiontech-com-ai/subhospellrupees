@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SubhoSpellRupees — Indian Currency Speller for Excel</title>
+  <meta name="description" content="Free Excel add-in that converts numbers to Indian currency words — Crores, Lakhs, Rupees and Paise. 1-click installer, no admin rights needed.">
+  <style>
+    /* ── Tokens ───────────────────────────────────────────────── */
+    :root {
+      --accent:       #C8690A;
+      --accent-dark:  #A05208;
+      --bg:           #FDF8F0;
+      --surface:      #F4EAD4;
+      --surface-2:    #ECE0C0;
+      --text:         #1C1209;
+      --muted:        #7A6347;
+      --border:       #D8C8A8;
+      --code-bg:      #EDE0C4;
+      --mark-alpha:   rgba(200, 105, 10, 0.055);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:          #141009;
+        --surface:     #1E1610;
+        --surface-2:   #261E14;
+        --text:        #F0E4C8;
+        --muted:       #9A8060;
+        --border:      #2C2016;
+        --code-bg:     #1E1610;
+        --mark-alpha:  rgba(200, 105, 10, 0.09);
+      }
+    }
+    :root[data-theme="dark"] {
+      --bg:          #141009;
+      --surface:     #1E1610;
+      --surface-2:   #261E14;
+      --text:        #F0E4C8;
+      --muted:       #9A8060;
+      --border:      #2C2016;
+      --code-bg:     #1E1610;
+      --mark-alpha:  rgba(200, 105, 10, 0.09);
+    }
+    :root[data-theme="light"] {
+      --accent:       #C8690A;
+      --accent-dark:  #A05208;
+      --bg:           #FDF8F0;
+      --surface:      #F4EAD4;
+      --surface-2:    #ECE0C0;
+      --text:         #1C1209;
+      --muted:        #7A6347;
+      --border:       #D8C8A8;
+      --code-bg:      #EDE0C4;
+      --mark-alpha:   rgba(200, 105, 10, 0.055);
+    }
+
+    /* ── Reset ────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      font-size: 16px;
+    }
+    a { color: var(--accent); }
+    a:hover { color: var(--accent-dark); }
+    code {
+      font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+      font-size: .875em;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      padding: .1em .35em;
+      border-radius: 2px;
+    }
+
+    /* ── Nav ──────────────────────────────────────────────────── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      height: 54px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-brand {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 1.05rem;
+      text-decoration: none;
+      color: var(--text);
+      letter-spacing: -.01em;
+    }
+    .nav-brand .r { color: var(--accent); }
+    .nav-links { display: flex; gap: 1.75rem; list-style: none; }
+    .nav-links a {
+      font-size: .875rem; color: var(--muted);
+      text-decoration: none; transition: color .15s;
+    }
+    .nav-links a:hover { color: var(--accent); }
+
+    /* ── Layout helpers ───────────────────────────────────────── */
+    .wrap { max-width: 900px; margin: 0 auto; padding: 0 2rem; }
+    .eyebrow {
+      font-size: .7rem; font-weight: 700;
+      letter-spacing: .11em; text-transform: uppercase;
+      color: var(--accent);
+      display: block; margin-bottom: .6rem;
+    }
+    .section-title {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-weight: normal;
+      font-size: clamp(1.45rem, 2.8vw, 2.1rem);
+      line-height: 1.2; text-wrap: balance;
+      letter-spacing: -.015em;
+      margin-bottom: .75rem;
+    }
+    .section-body { color: var(--muted); max-width: 540px; margin-bottom: 2rem; }
+    .divider { border: none; border-top: 1px solid var(--border); }
+
+    /* ── Buttons ──────────────────────────────────────────────── */
+    .btn {
+      display: inline-flex; align-items: center; gap: .45rem;
+      padding: .7rem 1.5rem; font-size: .9375rem; font-weight: 600;
+      text-decoration: none; border-radius: 2px; transition: background .15s, border-color .15s, color .15s;
+      cursor: pointer; border: 1px solid transparent;
+    }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: var(--accent-dark); color: #fff; }
+    .btn-ghost {
+      background: transparent; color: var(--muted);
+      border-color: var(--border);
+    }
+    .btn-ghost:hover { border-color: var(--muted); color: var(--text); }
+
+    /* ── Hero ─────────────────────────────────────────────────── */
+    .hero {
+      position: relative; overflow: hidden;
+      padding: 7rem 2rem 6rem;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .hero-wm {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-family: Georgia, serif;
+      font-size: min(55vw, 480px);
+      color: var(--mark-alpha);
+      line-height: 1; pointer-events: none; user-select: none;
+      font-weight: bold;
+    }
+    .hero-tag {
+      display: inline-block;
+      font-size: .7rem; font-weight: 700;
+      letter-spacing: .1em; text-transform: uppercase;
+      color: var(--accent); border: 1px solid var(--accent);
+      padding: .25rem .7rem; border-radius: 2px; margin-bottom: 1.5rem;
+    }
+    .hero h1 {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: clamp(2.4rem, 5.5vw, 4.2rem);
+      font-weight: normal; line-height: 1.1; text-wrap: balance;
+      letter-spacing: -.025em;
+      max-width: 760px; margin: 0 auto 1.25rem;
+      position: relative;
+    }
+    .hero h1 em { color: var(--accent); font-style: normal; }
+    .hero-sub {
+      color: var(--muted); font-size: 1.1rem;
+      max-width: 500px; margin: 0 auto 2.75rem;
+      line-height: 1.65; position: relative;
+    }
+    .hero-actions {
+      display: flex; gap: 1rem; justify-content: center;
+      flex-wrap: wrap; position: relative;
+    }
+    .hero-note {
+      margin-top: 1.25rem; font-size: .8125rem; color: var(--muted);
+      position: relative;
+    }
+
+    /* ── Demo ─────────────────────────────────────────────────── */
+    .demo { background: var(--surface); border-bottom: 1px solid var(--border); padding: 5rem 0; }
+    .formula-pill {
+      display: inline-block;
+      font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+      font-size: .95rem; color: var(--accent);
+      background: var(--bg); border: 1px solid var(--border);
+      padding: .35rem .85rem; border-radius: 2px; margin-bottom: 2rem;
+    }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+    thead th {
+      text-align: left; font-size: .7rem; font-weight: 700;
+      letter-spacing: .08em; text-transform: uppercase;
+      color: var(--muted);
+      padding: .5rem 1.25rem .65rem; border-bottom: 1px solid var(--border);
+    }
+    thead th:first-child { padding-left: 0; }
+    tbody tr { border-bottom: 1px solid var(--border); }
+    tbody tr:last-child { border-bottom: none; }
+    tbody td { padding: .9rem 1.25rem; vertical-align: top; font-size: .9375rem; }
+    tbody td:first-child { padding-left: 0; }
+    .num  { font-family: ui-monospace, 'Cascadia Code', Consolas, monospace; color: var(--muted); white-space: nowrap; }
+    .out  { font-weight: 500; }
+
+    /* ── Features ─────────────────────────────────────────────── */
+    .features { padding: 5.5rem 0; border-bottom: 1px solid var(--border); }
+    .feat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 2.5rem 3rem; margin-top: 3rem;
+    }
+    .feat { display: flex; flex-direction: column; gap: .6rem; }
+    .feat-mark {
+      width: 36px; height: 36px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; border-radius: 4px; margin-bottom: .25rem;
+      flex-shrink: 0;
+    }
+    .feat h3 {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-weight: normal; font-size: 1.05rem; line-height: 1.3;
+    }
+    .feat p { font-size: .9375rem; color: var(--muted); line-height: 1.6; }
+
+    /* ── Install ──────────────────────────────────────────────── */
+    .install { background: var(--surface); border-bottom: 1px solid var(--border); padding: 5.5rem 0; }
+    .install-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 3rem;
+    }
+    .card {
+      background: var(--bg); border: 1px solid var(--border);
+      padding: 2rem;
+    }
+    .card-badge {
+      display: inline-block; font-size: .65rem; font-weight: 800;
+      letter-spacing: .1em; text-transform: uppercase;
+      padding: .18rem .55rem; border-radius: 2px; margin-bottom: 1rem;
+    }
+    .badge-rec { background: var(--accent); color: #fff; }
+    .badge-man { background: var(--surface-2); color: var(--muted); border: 1px solid var(--border); }
+    .card h3 {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-weight: normal; font-size: 1.2rem; margin-bottom: 1.5rem;
+    }
+    .steps { display: flex; flex-direction: column; gap: 1.1rem; }
+    .step { display: grid; grid-template-columns: 1.4rem 1fr; gap: .75rem; }
+    .step-n { color: var(--accent); font-weight: 700; line-height: 1.65; }
+    .step-t { color: var(--muted); font-size: .9375rem; line-height: 1.6; }
+    .step-t strong { color: var(--text); }
+    .card-cta { margin-top: 1.75rem; }
+
+    /* ── Requirements ─────────────────────────────────────────── */
+    .requirements { padding: 4rem 0; border-bottom: 1px solid var(--border); }
+    .chip-row { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1.5rem; }
+    .chip {
+      font-size: .875rem; color: var(--muted);
+      border: 1px solid var(--border);
+      padding: .3rem .85rem; border-radius: 2rem;
+    }
+
+    /* ── Security ─────────────────────────────────────────────── */
+    .security { background: var(--surface); border-bottom: 1px solid var(--border); padding: 4.5rem 0; }
+    .sec-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem 2.5rem; margin-top: 2rem;
+    }
+    .sec-item { display: flex; gap: .6rem; align-items: flex-start; }
+    .sec-chk { color: var(--accent); font-weight: 700; line-height: 1.65; flex-shrink: 0; }
+    .sec-item p { font-size: .9375rem; color: var(--muted); line-height: 1.5; }
+
+    /* ── Troubleshoot ─────────────────────────────────────────── */
+    .trouble { padding: 4.5rem 0; border-bottom: 1px solid var(--border); }
+    .faq { display: flex; flex-direction: column; gap: 0; margin-top: 2rem; }
+    .faq-item { border-top: 1px solid var(--border); padding: 1.25rem 0; }
+    .faq-item:last-child { border-bottom: 1px solid var(--border); }
+    .faq-q { font-weight: 600; font-size: .9375rem; margin-bottom: .4rem; }
+    .faq-a { font-size: .9375rem; color: var(--muted); line-height: 1.6; }
+
+    /* ── Footer ───────────────────────────────────────────────── */
+    footer {
+      padding: 2.25rem 2rem;
+      display: flex; flex-wrap: wrap; gap: 1rem;
+      justify-content: space-between; align-items: center;
+    }
+    .footer-brand {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: .95rem; color: var(--muted);
+    }
+    .footer-brand .r { color: var(--accent); }
+    .footer-meta { font-size: .8125rem; color: var(--muted); text-align: right; line-height: 1.7; }
+    .footer-meta a { color: var(--muted); text-decoration: none; }
+    .footer-meta a:hover { color: var(--accent); }
+
+    /* ── Responsive ───────────────────────────────────────────── */
+    @media (max-width: 640px) {
+      .nav-links { display: none; }
+      .hero { padding: 4.5rem 1.5rem 3.5rem; }
+      .install-grid { grid-template-columns: 1fr; }
+      .footer-meta { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Nav ───────────────────────────────────────────────────── -->
+<nav>
+  <a class="nav-brand" href="#"><span class="r">₹</span> SubhoSpellRupees</a>
+  <ul class="nav-links">
+    <li><a href="#demo">Demo</a></li>
+    <li><a href="#install">Install</a></li>
+    <li><a href="#requirements">Requirements</a></li>
+    <li><a href="https://github.com/visiontech-com-ai/subhospellrupees" target="_blank" rel="noopener">GitHub ↗</a></li>
+  </ul>
+</nav>
+
+<!-- ── Hero ──────────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero-wm" aria-hidden="true">₹</div>
+  <div class="hero-tag">Free · Windows · Excel 2010+</div>
+  <h1>Spell Indian currency<br>amounts in words — <em>instantly.</em></h1>
+  <p class="hero-sub">
+    One formula. Any workbook. SubhoSpellRupees converts numbers into
+    spelled-out Indian currency — Crores, Lakhs, Thousands, Rupees and Paise.
+  </p>
+  <div class="hero-actions">
+    <a class="btn btn-primary"
+       href="https://github.com/visiontech-com-ai/subhospellrupees/releases/latest/download/install_addin.bat"
+       download>
+      ↓ Download Installer
+    </a>
+    <a class="btn btn-ghost"
+       href="https://github.com/visiontech-com-ai/subhospellrupees"
+       target="_blank" rel="noopener">
+      View on GitHub
+    </a>
+  </div>
+  <p class="hero-note">No admin rights required &middot; Auto-registers in Excel</p>
+</section>
+
+<!-- ── Demo ──────────────────────────────────────────────────── -->
+<section class="demo" id="demo">
+  <div class="wrap">
+    <span class="eyebrow">Live Examples</span>
+    <h2 class="section-title">One formula, any amount</h2>
+    <p class="section-body">Works with a number, a cell reference, or any formula that returns a number.</p>
+    <span class="formula-pill">=SpellRupees( A1 )</span>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Input</th>
+            <th>Output</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="num">1,000</td>
+            <td class="out">One Thousand Rupees Only</td>
+          </tr>
+          <tr>
+            <td class="num">75,250.50</td>
+            <td class="out">Seventy Five Thousand Two Hundred Fifty Rupees and Fifty Paise Only</td>
+          </tr>
+          <tr>
+            <td class="num">15,00,000</td>
+            <td class="out">Fifteen Lakhs Rupees Only</td>
+          </tr>
+          <tr>
+            <td class="num">1,00,00,000</td>
+            <td class="out">One Crore Rupees Only</td>
+          </tr>
+          <tr>
+            <td class="num">99,99,99,99,999</td>
+            <td class="out">Ninety Nine Arab Ninety Nine Crore Ninety Nine Lakh Ninety Nine Thousand Nine Hundred Ninety Nine Rupees Only</td>
+          </tr>
+          <tr>
+            <td class="num">=SUM(B2:B10)</td>
+            <td class="out"><span style="color:var(--muted);font-style:italic;">Works with any formula that returns a number</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ── Features ──────────────────────────────────────────────── -->
+<section class="features" id="features">
+  <div class="wrap">
+    <span class="eyebrow">Features</span>
+    <h2 class="section-title">Built for Indian finance workflows</h2>
+    <div class="feat-grid">
+      <div class="feat">
+        <div class="feat-mark">🇮🇳</div>
+        <h3>Indian numbering system</h3>
+        <p>Outputs Crores, Lakhs and Thousands — not the Western Millions/Billions format. Paise handled correctly to two decimal places.</p>
+      </div>
+      <div class="feat">
+        <div class="feat-mark">📂</div>
+        <h3>Works in every workbook</h3>
+        <p>Installed as a system-wide <code>.xlam</code> add-in. No copying VBA into individual files — open any workbook and use <code>=SpellRupees()</code> immediately.</p>
+      </div>
+      <div class="feat">
+        <div class="feat-mark">⚡</div>
+        <h3>1-click installer</h3>
+        <p>Download one <code>.bat</code> file and double-click it. Fetches the add-in from GitHub, places it in the correct folder, and writes the registry entry for auto-load.</p>
+      </div>
+      <div class="feat">
+        <div class="feat-mark">🔗</div>
+        <h3>Formula-compatible</h3>
+        <p>Nest it freely: <code>=SpellRupees(SUM(B2:B10))</code>, <code>=SpellRupees(A1*1.18)</code> — anything that returns a number works as input.</p>
+      </div>
+      <div class="feat">
+        <div class="feat-mark">🔒</div>
+        <h3>No admin rights needed</h3>
+        <p>Installs entirely to your user profile. No UAC prompt, no IT request, no elevated privileges at any step.</p>
+      </div>
+      <div class="feat">
+        <div class="feat-mark">🛡️</div>
+        <h3>Private &amp; offline</h3>
+        <p>After installation, <code>=SpellRupees()</code> runs fully offline. No data ever leaves your machine. VBA source is password-protected to preserve function integrity.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Install ────────────────────────────────────────────────── -->
+<section class="install" id="install">
+  <div class="wrap">
+    <span class="eyebrow">Installation</span>
+    <h2 class="section-title">Up and running in under a minute</h2>
+    <p class="section-body">Choose the method that suits you. The 1-click installer handles everything automatically.</p>
+    <div class="install-grid">
+
+      <div class="card">
+        <span class="card-badge badge-rec">Recommended</span>
+        <h3>1-Click Installer</h3>
+        <div class="steps">
+          <div class="step">
+            <span class="step-n">1</span>
+            <p class="step-t">Download <strong>install_addin.bat</strong> from the button below.</p>
+          </div>
+          <div class="step">
+            <span class="step-n">2</span>
+            <p class="step-t">Double-click the file. No admin prompt will appear.</p>
+          </div>
+          <div class="step">
+            <span class="step-n">3</span>
+            <p class="step-t">Open (or restart) Excel. Type <code>=SpellRupees()</code> in any cell — it works immediately.</p>
+          </div>
+        </div>
+        <div class="card-cta">
+          <a class="btn btn-primary"
+             href="https://github.com/visiontech-com-ai/subhospellrupees/releases/latest/download/install_addin.bat"
+             download>↓ Download install_addin.bat</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-badge badge-man">Manual</span>
+        <h3>Manual Installation</h3>
+        <div class="steps">
+          <div class="step">
+            <span class="step-n">1</span>
+            <p class="step-t">Download <strong>SubhoSpellRupees.xlam</strong> from the <a href="https://github.com/visiontech-com-ai/subhospellrupees/releases/latest" target="_blank" rel="noopener">latest release</a>.</p>
+          </div>
+          <div class="step">
+            <span class="step-n">2</span>
+            <p class="step-t">Press <code>Win+R</code>, type <code>%APPDATA%\Microsoft\AddIns</code>, press Enter. Copy the file there.</p>
+          </div>
+          <div class="step">
+            <span class="step-n">3</span>
+            <p class="step-t">In Excel: <strong>File → Options → Add-ins</strong>. Set Manage to <em>Excel Add-ins</em> and click <strong>Go</strong>.</p>
+          </div>
+          <div class="step">
+            <span class="step-n">4</span>
+            <p class="step-t">Click <strong>Browse</strong>, select the file, tick the checkbox, click <strong>OK</strong>.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── Requirements ───────────────────────────────────────────── -->
+<section class="requirements" id="requirements">
+  <div class="wrap">
+    <span class="eyebrow">Compatibility</span>
+    <h2 class="section-title">Requirements</h2>
+    <div class="chip-row">
+      <span class="chip">Microsoft Excel 2010 or later</span>
+      <span class="chip">Windows 7 or later</span>
+      <span class="chip">No admin rights required</span>
+      <span class="chip">Internet required for initial install only</span>
+    </div>
+  </div>
+</section>
+
+<!-- ── Security ───────────────────────────────────────────────── -->
+<section class="security">
+  <div class="wrap">
+    <span class="eyebrow">Security &amp; Privacy</span>
+    <h2 class="section-title">No surprises</h2>
+    <div class="sec-grid">
+      <div class="sec-item">
+        <span class="sec-chk">✓</span>
+        <p>Downloads only from this public GitHub repository over HTTPS (TLS 1.2+)</p>
+      </div>
+      <div class="sec-item">
+        <span class="sec-chk">✓</span>
+        <p>All computation is local — <code>=SpellRupees()</code> never contacts any server</p>
+      </div>
+      <div class="sec-item">
+        <span class="sec-chk">✓</span>
+        <p>VBA source is password-protected to prevent accidental modification</p>
+      </div>
+      <div class="sec-item">
+        <span class="sec-chk">✓</span>
+        <p>Installer requires no administrator privileges at any point</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Troubleshooting ────────────────────────────────────────── -->
+<section class="trouble" id="troubleshooting">
+  <div class="wrap">
+    <span class="eyebrow">Troubleshooting</span>
+    <h2 class="section-title">Common questions</h2>
+    <div class="faq">
+      <div class="faq-item">
+        <p class="faq-q">"Failed to download file" during installation</p>
+        <p class="faq-a">Check your internet connection. If you are behind a corporate proxy or firewall, use the manual installation method instead — download the <code>.xlam</code> directly from the <a href="https://github.com/visiontech-com-ai/subhospellrupees/releases/latest">releases page</a>.</p>
+      </div>
+      <div class="faq-item">
+        <p class="faq-q">Function not found after installation</p>
+        <p class="faq-a">Close Excel completely and reopen it. If the issue persists, confirm that <code>SubhoSpellRupees.xlam</code> exists in <code>%APPDATA%\Microsoft\AddIns\</code>. Press <code>Win+R</code> and paste that path to check.</p>
+      </div>
+      <div class="faq-item">
+        <p class="faq-q">Macro security warning on first open</p>
+        <p class="faq-a">Go to <strong>File → Options → Trust Center → Trust Center Settings → Trusted Locations</strong> and add <code>%APPDATA%\Microsoft\AddIns\</code>. This is Excel's standard trusted location for add-ins.</p>
+      </div>
+      <div class="faq-item">
+        <p class="faq-q">How to uninstall</p>
+        <p class="faq-a">In Excel, go to <strong>File → Options → Add-ins → Manage: Excel Add-ins → Go</strong>. Uncheck <em>SubhoSpellRupees</em> and click OK. Then delete <code>%APPDATA%\Microsoft\AddIns\SubhoSpellRupees.xlam</code>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Footer ─────────────────────────────────────────────────── -->
+<footer>
+  <div class="footer-brand"><span class="r">₹</span> SubhoSpellRupees</div>
+  <div class="footer-meta">
+    Developed by Subho &middot; Distributed by DwiSha Ventures Sdn Bhd, VisionTech<br>
+    <a href="https://github.com/visiontech-com-ai/subhospellrupees" target="_blank" rel="noopener">GitHub</a>
+    &middot;
+    <a href="https://github.com/visiontech-com-ai/subhospellrupees/releases" target="_blank" rel="noopener">Releases</a>
+  </div>
+</footer>
+
+</body>
+</html>
