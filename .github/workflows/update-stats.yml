@@ -21,17 +21,20 @@ jobs:
           REPO="${{ github.repository }}"
           API="https://api.github.com/repos/$REPO"
           AUTH=(-H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json")
-          VIEWS=$(curl -sf "${AUTH[@]}" "$API/traffic/views")
-          CLONES=$(curl -sf "${AUTH[@]}" "$API/traffic/clones")
-          RELEASES=$(curl -sf "${AUTH[@]}" "$API/releases")
-          jq -n \
-            --argjson v  "$(echo "$VIEWS"   | jq '{count:.count, uniques:.uniques}')" \
-            --argjson c  "$(echo "$CLONES"  | jq '{count:.count, uniques:.uniques}')" \
-            --argjson dl "$(echo "$RELEASES" | jq '[.[].assets[].download_count] | add // 0')" \
-            --arg up "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-            '{views:$v, clones:$c, downloads:$dl, updated:$up}' \
-            > docs/stats.json
 
+          # Traffic API needs a PAT; fall back to existing values when unavailable
+          VIEWS=$(curl -s "${AUTH[@]}" "$API/traffic/views")
+          CLONES=$(curl -s "${AUTH[@]}" "$API/traffic/clones")
+
+          if ! echo "$VIEWS" | jq -e '.count' > /dev/null 2>&1; then
+            VIEWS=$(jq '.views' docs/stats.json 2>/dev/null || echo '{"count":0,"uniques":0}')
+          fi
+          if ! echo "$CLONES" | jq -e '.count' > /dev/null 2>&1; then
+            CLONES=$(jq '.clones' docs/stats.json 2>/dev/null || echo '{"count":0,"uniques":0}')
+          fi
+
+          # Releases endpoint is public - no auth needed
+          RELEASES=$(curl -s "https://api.github.com/repos/$REPO/releases")
       - name: Commit if changed
         run: |
           git config user.name  "github-actions[bot]"
