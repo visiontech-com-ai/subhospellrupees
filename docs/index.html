@@ -303,6 +303,45 @@
     .footer-meta a { color: var(--muted); text-decoration: none; }
     .footer-meta a:hover { color: var(--accent); }
 
+    /* ── Stats strip ─────────────────────────────────────────── */
+    .stats {
+      border-bottom: 1px solid var(--border);
+      padding: 0;
+    }
+    .stats-row {
+      display: flex; align-items: stretch;
+      justify-content: center;
+    }
+    .stat {
+      flex: 1; max-width: 200px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 1.75rem 1rem;
+      gap: .3rem;
+    }
+    .stat + .stat { border-left: 1px solid var(--border); }
+    .stat-n {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 2.25rem; line-height: 1;
+      letter-spacing: -.03em;
+      color: var(--accent);
+      font-variant-numeric: tabular-nums;
+    }
+    .stat-l {
+      font-size: .72rem; font-weight: 600;
+      letter-spacing: .09em; text-transform: uppercase;
+      color: var(--muted);
+    }
+    .stat-sub {
+      font-size: .7rem; color: var(--muted); opacity: .7;
+      margin-top: .1rem;
+    }
+    @media (max-width: 480px) {
+      .stats-row { flex-wrap: wrap; }
+      .stat { flex: 1 1 45%; max-width: none; }
+      .stat:nth-child(3) { border-left: none; }
+    }
+
     /* ── Responsive ───────────────────────────────────────────── */
     @media (max-width: 640px) {
       .nav-links { display: none; }
@@ -348,6 +387,28 @@
     </a>
   </div>
   <p class="hero-note">No admin rights required &middot; Auto-registers in Excel</p>
+</section>
+
+<!-- ── Stats ─────────────────────────────────────────────────── -->
+<section class="stats">
+  <div class="wrap stats-row">
+    <div class="stat">
+      <span class="stat-n" id="stat-dl">—</span>
+      <span class="stat-l">Installs</span>
+    </div>
+    <div class="stat">
+      <span class="stat-n" id="stat-vis">—</span>
+      <span class="stat-l">Unique visitors</span>
+    </div>
+    <div class="stat">
+      <span class="stat-n" id="stat-cl">—</span>
+      <span class="stat-l">Git clones</span>
+    </div>
+    <div class="stat">
+      <span class="stat-n" id="stat-pv">—</span>
+      <span class="stat-l">Page views</span>
+    </div>
+  </div>
 </section>
 
 <!-- ── Demo ──────────────────────────────────────────────────── -->
@@ -572,5 +633,32 @@
   </div>
 </footer>
 
+<script>
+  function countUp(el, target, duration) {
+    if (target === 0) { el.textContent = '0'; return; }
+    const start = performance.now();
+    function step(now) {
+      const p = Math.min((now - start) / duration, 1);
+      const ease = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(ease * target);
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  fetch('stats.json')
+    .then(r => r.json())
+    .then(d => {
+      countUp(document.getElementById('stat-dl'),  d.downloads,        800);
+      countUp(document.getElementById('stat-vis'), d.views.uniques,    900);
+      countUp(document.getElementById('stat-cl'),  d.clones.uniques,  1000);
+      countUp(document.getElementById('stat-pv'),  d.views.count,      900);
+    })
+    .catch(() => {
+      ['stat-dl','stat-vis','stat-cl','stat-pv'].forEach(id => {
+        document.getElementById(id).textContent = '—';
+      });
+    });
+</script>
 </body>
 </html>
