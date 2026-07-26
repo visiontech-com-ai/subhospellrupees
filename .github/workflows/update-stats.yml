@@ -1,0 +1,41 @@
+name: Update Stats
+
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-stats:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch stats and write docs/stats.json
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          REPO="${{ github.repository }}"
+          API="https://api.github.com/repos/$REPO"
+          AUTH=(-H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json")
+          VIEWS=$(curl -sf "${AUTH[@]}" "$API/traffic/views")
+          CLONES=$(curl -sf "${AUTH[@]}" "$API/traffic/clones")
+          RELEASES=$(curl -sf "${AUTH[@]}" "$API/releases")
+          jq -n \
+            --argjson v  "$(echo "$VIEWS"   | jq '{count:.count, uniques:.uniques}')" \
+            --argjson c  "$(echo "$CLONES"  | jq '{count:.count, uniques:.uniques}')" \
+            --argjson dl "$(echo "$RELEASES" | jq '[.[].assets[].download_count] | add // 0')" \
+            --arg up "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            '{views:$v, clones:$c, downloads:$dl, updated:$up}' \
+            > docs/stats.json
+
+      - name: Commit if changed
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/stats.json
+          git diff --staged --quiet || git commit -m "chore: update stats [skip ci]"
+          git push
